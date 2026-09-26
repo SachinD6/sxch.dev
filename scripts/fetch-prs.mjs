@@ -54,13 +54,23 @@ function escapeAttr(value) {
   return escapeText(value).replace(/"/g, "&quot;");
 }
 
+function formatStars(stars) {
+  if (stars < 1000) {
+    return String(stars);
+  }
+  if (stars < 100000) {
+    return `${(stars / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return `${Math.round(stars / 1000)}k`;
+}
+
 function render(pr) {
   const icon = ICONS[pr.state];
   return [
     '      <li class="pr">',
     `        <svg class="pr-icon ${icon.className}" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="${icon.path}"/></svg>`,
     `        <a href="${escapeAttr(pr.url)}">${escapeTitle(pr.title)}</a>`,
-    `        <span class="pr-meta">${escapeText(pr.repo)} #${pr.number} &middot; ${pr.state}</span>`,
+    `        <span class="pr-meta">${escapeText(pr.repo)} #${pr.number} &middot; ${pr.state} &middot; ${formatStars(pr.stars)} stars</span>`,
     "      </li>",
   ].join("\n");
 }
@@ -117,6 +127,16 @@ external.sort(
     a.repo.localeCompare(b.repo) ||
     a.number - b.number
 );
+
+const starsByRepo = new Map();
+
+for (const repo of new Set(external.map((pr) => pr.repo))) {
+  starsByRepo.set(repo, ghJson(["api", `repos/${repo}`, "--jq", ".stargazers_count"]));
+}
+
+for (const pr of external) {
+  pr.stars = starsByRepo.get(pr.repo);
+}
 
 const pages = TARGETS.map((target) => {
   const html = readFileSync(target.path, "utf8");
