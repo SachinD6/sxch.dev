@@ -163,6 +163,23 @@ a:focus-visible {
   letter-spacing: 0.03em;
 }
 
+.prs {
+  list-style: none;
+  padding-left: 0;
+}
+
+.pr {
+  margin-bottom: 28px;
+}
+
+.pr-meta {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
 .muted {
   color: var(--muted);
 }
