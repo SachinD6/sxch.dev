@@ -203,6 +203,10 @@ a:focus-visible {
   color: var(--merged);
 }
 
+.pr-icon-accepted {
+  color: var(--open);
+}
+
 .pr-meta {
   grid-column: 2;
   grid-row: 2;
