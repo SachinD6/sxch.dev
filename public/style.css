@@ -4,6 +4,8 @@
   --fg: #111111;
   --muted: #6f6f78;
   --rule: #e6e6e6;
+  --open: #1f883d;
+  --merged: #8250df;
 }
 
 :root[data-theme="dark"] {
@@ -12,6 +14,8 @@
   --fg: #f2f2f5;
   --muted: #9a9aa8;
   --rule: #2a2a30;
+  --open: #3fb950;
+  --merged: #a371f7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +25,8 @@
     --fg: #f2f2f5;
     --muted: #9a9aa8;
     --rule: #2a2a30;
+    --open: #3fb950;
+    --merged: #a371f7;
   }
 }
 
@@ -169,15 +175,64 @@ a:focus-visible {
 }
 
 .pr {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  column-gap: 8px;
   margin-bottom: 28px;
 }
 
+.pr > a {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.pr-icon {
+  grid-column: 1;
+  grid-row: 1;
+  flex: none;
+  align-self: start;
+  margin-top: 4px;
+  fill: currentColor;
+}
+
+.pr-icon-open {
+  color: var(--open);
+}
+
+.pr-icon-merged {
+  color: var(--merged);
+}
+
 .pr-meta {
+  grid-column: 2;
+  grid-row: 2;
   display: block;
   margin-top: 5px;
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.03em;
+}
+
+.prs-more a {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.prs-more a:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.prs-more a:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
 }
 
 .muted {
