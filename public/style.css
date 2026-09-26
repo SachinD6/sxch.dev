@@ -213,28 +213,6 @@ a:focus-visible {
   letter-spacing: 0.03em;
 }
 
-.prs-more a {
-  display: inline-block;
-  padding: 6px 14px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.prs-more a:hover {
-  color: var(--fg);
-  border-color: var(--fg);
-}
-
-.prs-more a:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 3px;
-}
-
 .muted {
   color: var(--muted);
 }
