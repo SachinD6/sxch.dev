@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>freshergo &middot; Sachin Chaudhary</title>
+  <meta name="description" content="a case study on freshergo, a job board for 450+ verified entry-level tech jobs. the problem, the pipeline, and the numbers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <h1 class="sr-only">freshergo case study</h1>
+  <button id="theme-toggle" type="button" aria-label="Toggle color theme">dark</button>
+
+  <main>
+    <p class="links"><a href="/">back</a></p>
+
+    <p class="label">freshergo</p>
+
+    <p>
+      freshergo is a job board for entry-level tech roles, live at
+      <a href="https://freshergo.com">freshergo.com</a>.
+    </p>
+
+    <p class="links"><a href="https://freshergo.com">freshergo.com</a></p>
+
+    <p class="label">the problem</p>
+
+    <p>
+      pulling entry-level tech jobs from company career pages sounds simple
+      until you do it. the list fills up with mid-level roles, sales roles, and
+      postings that have already expired. the board stops being trustworthy,
+      and the applicant ends up doing the filtering by hand.
+    </p>
+
+    <p class="label">what it does</p>
+
+    <p>
+      freshergo carries 450+ verified entry-level tech jobs from 85+
+      companies, pulled from official Greenhouse, Lever and Ashby career pages
+      and updated daily. there is search, saved roles, and weekly email
+      alerts. it is free, and there is no spam.
+    </p>
+
+    <p class="label">how it works</p>
+
+    <p>
+      a scheduled pipeline pulls from official ATS endpoints, dedupes, writes
+      to a database, and the site serves from Cloudflare. syncs batch the ATS
+      sources, dedupe postings across boards, and upsert in chunks. job
+      deactivation updates are chunked too, to stay inside D1&rsquo;s
+      parameter limit. email delivery is Cloudflare-first, behind a hard
+      verification gate, and the site runs on Cloudflare Workers.
+    </p>
+
+    <p class="label">the hard part</p>
+
+    <p>
+      the hard part was relevance, not scraping. the board used to list
+      mid-level roles, sales roles, and expired postings as fresher jobs, and
+      a list like that is hard to trust. a commit titled &ldquo;stop listing
+      mid-level, sales, and expired jobs as fresher roles&rdquo; marks the
+      change: fresher roles on the board are entry-level tech roles, and
+      expired postings come down.
+    </p>
+
+    <!-- AUTHOR: one sentence on how the relevance filter actually works. -->
+
+    <p class="label">numbers</p>
+
+    <ul class="numbers">
+      <li>450+ live roles</li>
+      <li>85+ companies</li>
+      <li>15k+ visits a month</li>
+    </ul>
+
+    <!-- AUTHOR: monthly hosting cost, alert subscribers, and any growth figure worth showing. -->
+
+    <!-- AUTHOR: two lines on what you would do next, as a `what i would do next` section matching the others. -->
+  </main>
+
+  <span class="byline">sachin chaudhary</span>
+
+  <script src="/theme.js" defer></script>
+</body>
+</html>

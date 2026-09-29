@@ -151,6 +151,16 @@ a:focus-visible {
   font-weight: 500;
 }
 
+.stack {
+  margin-top: 48px;
+  margin-bottom: 18px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
 .item {
   margin-bottom: 28px;
 }
@@ -164,6 +174,14 @@ a:focus-visible {
 }
 
 .meta {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.numbers {
+  list-style: none;
+  padding-left: 0;
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.03em;
@@ -321,6 +339,10 @@ a:focus-visible {
   }
 
   .label {
+    margin-top: 40px;
+  }
+
+  .stack {
     margin-top: 40px;
   }
 
