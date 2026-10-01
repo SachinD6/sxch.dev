@@ -160,6 +160,7 @@ const visible = external.filter((record) => record.date >= EARLIEST_DATE);
 
 visible.sort(
   (a, b) =>
+    (a.state === "merged" ? 0 : 1) - (b.state === "merged" ? 0 : 1) ||
     b.date.localeCompare(a.date) ||
     a.repo.localeCompare(b.repo) ||
     a.number - b.number
