@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { compareRecords } from "./compare.mjs";
+
 const OWNER = "SachinD6";
 const HOME_LIMIT = 3;
 const PAGE_LIMIT = 50;
@@ -158,13 +160,7 @@ const external = EXCLUDE_OWN_REPOS
 
 const visible = external.filter((record) => record.date >= EARLIEST_DATE);
 
-visible.sort(
-  (a, b) =>
-    (a.state === "merged" ? 0 : 1) - (b.state === "merged" ? 0 : 1) ||
-    b.date.localeCompare(a.date) ||
-    a.repo.localeCompare(b.repo) ||
-    a.number - b.number
-);
+visible.sort(compareRecords);
 
 const starsByRepo = new Map();
 
