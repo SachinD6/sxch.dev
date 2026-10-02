@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "node scripts/fetch-prs.mjs && wrangler deploy",
-    "prs": "node scripts/fetch-prs.mjs"
+    "prs": "node scripts/fetch-prs.mjs",
+    "test": "node --test \"scripts/**/*.test.mjs\""
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
