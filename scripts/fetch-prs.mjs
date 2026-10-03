@@ -160,8 +160,6 @@ const external = EXCLUDE_OWN_REPOS
 
 const visible = external.filter((record) => record.date >= EARLIEST_DATE);
 
-visible.sort(compareRecords);
-
 const starsByRepo = new Map();
 
 for (const repo of new Set(visible.map((record) => record.repo))) {
@@ -171,6 +169,8 @@ for (const repo of new Set(visible.map((record) => record.repo))) {
 for (const record of visible) {
   record.stars = starsByRepo.get(record.repo);
 }
+
+visible.sort(compareRecords);
 
 const pages = TARGETS.map((target) => {
   const html = readFileSync(target.path, "utf8");

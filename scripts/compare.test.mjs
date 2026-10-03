@@ -3,13 +3,27 @@ import { test } from "node:test";
 
 import { compareRecords } from "./compare.mjs";
 
-const merged = (repo, number, date) => ({ state: "merged", repo, number, date });
-const open = (repo, number, date) => ({ state: "open", repo, number, date });
-const accepted = (repo, number, date) => ({ state: "accepted", repo, number, date });
+const merged = (repo, number, date, stars = 0) => ({ state: "merged", repo, number, date, stars });
+const open = (repo, number, date, stars = 0) => ({ state: "open", repo, number, date, stars });
+const accepted = (repo, number, date, stars = 0) => ({ state: "accepted", repo, number, date, stars });
 
 const key = (record) => `${record.repo}#${record.number}${record.title ? ` ${record.title}` : ""}`;
 
 const order = (records) => records.slice().sort(compareRecords).map(key);
+
+test("a record with more stars sorts before one with fewer stars, even when the other is newer", () => {
+  assert.deepEqual(
+    order([open("acme/widgets", 12, "2025-09-09", 4), open("acme/tools", 4, "2024-05-01", 900)]),
+    ["acme/tools#4", "acme/widgets#12"]
+  );
+});
+
+test("more stars outrank the merged tiebreak", () => {
+  assert.deepEqual(
+    order([merged("acme/tools", 4, "2024-05-01", 4), open("acme/widgets", 12, "2025-09-09", 1200)]),
+    ["acme/widgets#12", "acme/tools#4"]
+  );
+});
 
 test("a merged record sorts before an open record with a newer date", () => {
   assert.deepEqual(order([open("acme/widgets", 12, "2025-09-09"), merged("acme/tools", 4, "2024-05-01")]), [
@@ -25,11 +39,25 @@ test("a merged record sorts before an accepted record with a newer date", () => 
   );
 });
 
-test("among merged records, newer comes first", () => {
-  assert.deepEqual(order([merged("acme/tools", 4, "2024-05-01"), merged("acme/widgets", 12, "2025-11-11")]), [
-    "acme/widgets#12",
-    "acme/tools#4",
-  ]);
+test("records with equal stars fall through to merged before open", () => {
+  assert.deepEqual(
+    order([open("acme/widgets", 12, "2025-09-09", 300), merged("acme/tools", 4, "2024-05-01", 300)]),
+    ["acme/tools#4", "acme/widgets#12"]
+  );
+});
+
+test("records with equal stars fall through to merged before accepted", () => {
+  assert.deepEqual(
+    order([accepted("acme/docs", 31, "2025-09-09", 300), merged("acme/tools", 4, "2024-05-01", 300)]),
+    ["acme/tools#4", "acme/docs#31"]
+  );
+});
+
+test("among merged records with equal stars, newer comes first", () => {
+  assert.deepEqual(
+    order([merged("acme/tools", 4, "2024-05-01", 300), merged("acme/widgets", 12, "2025-11-11", 300)]),
+    ["acme/widgets#12", "acme/tools#4"]
+  );
 });
 
 test("among non-merged records, newer comes first", () => {
@@ -55,12 +83,12 @@ test("records with the same date and repo fall back to the lower pull request nu
 
 test("the sort is stable and deterministic", () => {
   const records = [
-    merged("acme/tools", 9, "2025-03-03"),
-    accepted("acme/docs", 31, "2025-02-02"),
-    { ...merged("acme/tools", 9, "2025-03-03"), title: "written first" },
-    open("acme/widgets", 12, "2025-05-05"),
-    { ...merged("acme/tools", 9, "2025-03-03"), title: "written second" },
-    merged("acme/gadgets", 3, "2025-06-06"),
+    merged("acme/tools", 9, "2025-03-03", 900),
+    accepted("acme/docs", 31, "2025-02-02", 40),
+    { ...merged("acme/tools", 9, "2025-03-03", 900), title: "written first" },
+    merged("acme/widgets", 12, "2025-11-11", 250),
+    { ...merged("acme/tools", 9, "2025-03-03", 900), title: "written second" },
+    open("acme/gadgets", 3, "2024-01-05", 1200),
   ];
   const shuffled = [records[4], records[1], records[5], records[0], records[3], records[2]];
 
