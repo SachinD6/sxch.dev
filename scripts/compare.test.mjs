@@ -18,10 +18,10 @@ test("a record with more stars sorts before one with fewer stars, even when the 
   );
 });
 
-test("more stars outrank the merged tiebreak", () => {
+test("a merged record outranks a higher-starred open record", () => {
   assert.deepEqual(
     order([merged("acme/tools", 4, "2024-05-01", 4), open("acme/widgets", 12, "2025-09-09", 1200)]),
-    ["acme/widgets#12", "acme/tools#4"]
+    ["acme/tools#4", "acme/widgets#12"]
   );
 });
 
@@ -39,28 +39,42 @@ test("a merged record sorts before an accepted record with a newer date", () => 
   );
 });
 
-test("records with equal stars fall through to merged before open", () => {
+test("a merged record outranks an open record at equal stars", () => {
   assert.deepEqual(
     order([open("acme/widgets", 12, "2025-09-09", 300), merged("acme/tools", 4, "2024-05-01", 300)]),
     ["acme/tools#4", "acme/widgets#12"]
   );
 });
 
-test("records with equal stars fall through to merged before accepted", () => {
+test("a merged record outranks an accepted record at equal stars", () => {
   assert.deepEqual(
     order([accepted("acme/docs", 31, "2025-09-09", 300), merged("acme/tools", 4, "2024-05-01", 300)]),
     ["acme/tools#4", "acme/docs#31"]
   );
 });
 
-test("among merged records with equal stars, newer comes first", () => {
+test("among merged records, more stars come first even when the other record is newer", () => {
+  assert.deepEqual(
+    order([merged("acme/tools", 4, "2024-05-01", 300), merged("acme/widgets", 12, "2025-11-11", 900)]),
+    ["acme/widgets#12", "acme/tools#4"]
+  );
+});
+
+test("among non-merged records, more stars come first even when the other record is newer", () => {
+  assert.deepEqual(
+    order([open("acme/tools", 4, "2024-05-01", 300), accepted("acme/widgets", 12, "2025-11-11", 900)]),
+    ["acme/widgets#12", "acme/tools#4"]
+  );
+});
+
+test("among merged records with equal stars, the recency tiebreak puts the newer record first", () => {
   assert.deepEqual(
     order([merged("acme/tools", 4, "2024-05-01", 300), merged("acme/widgets", 12, "2025-11-11", 300)]),
     ["acme/widgets#12", "acme/tools#4"]
   );
 });
 
-test("among non-merged records, newer comes first", () => {
+test("among non-merged records with equal stars, the recency tiebreak puts the newer record first", () => {
   assert.deepEqual(order([open("acme/widgets", 12, "2024-05-01"), accepted("acme/docs", 31, "2025-11-11")]), [
     "acme/docs#31",
     "acme/widgets#12",
@@ -101,11 +115,11 @@ test("the sort is stable and deterministic", () => {
   }
 
   assert.deepEqual(first.map(key), [
-    "acme/gadgets#3",
     "acme/tools#9 written second",
     "acme/tools#9",
     "acme/tools#9 written first",
     "acme/widgets#12",
+    "acme/gadgets#3",
     "acme/docs#31",
   ]);
 });
