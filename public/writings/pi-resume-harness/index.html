@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>building pi-resume-harness &middot; Sachin Chaudhary</title>
+  <meta name="description" content="resume claude code, cursor, codex and grok sessions inside pi. how pi-resume-harness reads local session stores and carries context forward.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .post ul, .post ol { margin: 0 0 26px 20px; }
+    .post li { margin-bottom: 6px; }
+    .post li:last-child { margin-bottom: 0; }
+    .post code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.86em;
+      background: color-mix(in srgb, var(--fg) 7%, transparent);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .post pre {
+      margin-bottom: 26px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      background: var(--fg);
+      color: var(--bg);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .post pre code { background: none; padding: 0; color: inherit; }
+    .post table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 26px;
+      font-size: 13.5px;
+    }
+    .post th, .post td {
+      text-align: left;
+      padding: 8px 10px 8px 0;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    .post th {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .post td code { white-space: nowrap; }
+    .post blockquote {
+      margin-bottom: 26px;
+      padding-left: 14px;
+      border-left: 2px solid var(--muted);
+      color: var(--muted);
+    }
+    .post blockquote p { margin-bottom: 0; }
+  </style>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <h1 class="sr-only">building pi-resume-harness</h1>
+  <button id="theme-toggle" type="button" aria-label="Toggle color theme">dark</button>
+
+  <main class="post">
+    <p class="links"><a href="/">back</a></p>
+
+    <p class="label">building pi-resume-harness</p>
+
+    <p class="meta">oct 16, 2026 &middot; pi, typescript &middot; <a href="https://github.com/SachinD6/pi-resume-harness">source</a> &middot; <a href="https://www.npmjs.com/package/pi-resume-harness">npm</a></p>
+
+    <p>
+      claude code, cursor, codex, grok, pi. that&rsquo;s basically my whole
+      dock right now.
+    </p>
+
+    <p>
+      i love pi for the same reason everyone does. four tools, a tiny prompt,
+      you see every token. but all my old context was stuck somewhere else. a
+      half-finished auth flow in claude code. a cursor chat with the exact
+      error i already fixed once. you know the pain.
+    </p>
+
+    <p>
+      re-explaining all of that to pi from scratch gets old fast. so i built
+      <a href="https://github.com/SachinD6/pi-resume-harness">pi-resume-harness</a>
+      &mdash; a pi extension that reads those other tools&rsquo; saved sessions
+      straight from disk and keeps going inside pi. no apis, no retyping.
+    </p>
+
+    <blockquote><p>this is a handoff, not a live restore. the old conversation gets summarized and carried forward, never replayed.</p></blockquote>
+
+    <p class="label">tl;dr</p>
+
+    <ul>
+      <li><code>/resume-claude</code> <code>/resume-cursor</code> <code>/resume-codex</code> <code>/resume-grok</code> resume a foreign session in pi</li>
+      <li><code>/resume-foreign</code> picks from all of them in one list, scoped to your current folder</li>
+      <li><code>/copy-session</code> copies the full transcript to the clipboard, paste it into any agent</li>
+      <li>everything runs locally. the source cli is never invoked, nothing is sent anywhere.</li>
+    </ul>
+
+    <pre><code>pi install npm:pi-resume-harness</code></pre>
+
+    <p>restart pi, <code>cd</code> into your project, run <code>/resume-foreign</code>. done.</p>
+
+    <p class="label">why not just copy-paste</p>
+
+    <p>
+      that was my v0, and it breaks three ways. you lose the tool calls, and
+      the &ldquo;tried x, got y&rdquo; part is the useful part. session files
+      are nasty jsonl with envelopes and slash-command noise. and every tool
+      stores dozens of sessions named like <code>8f3a1c2e-&hellip;</code>
+    </p>
+
+    <p>
+      what i actually wanted: open pi in my project, see only this
+      project&rsquo;s sessions, fuzzy-filter by a word, hit enter. so
+      that&rsquo;s what it does.
+    </p>
+
+    <p class="label">how it works</p>
+
+    <p>each command just reads that tool&rsquo;s local store. that&rsquo;s it.</p>
+
+    <table>
+      <tr><th>command</th><th>store it reads</th></tr>
+      <tr><td><code>/resume-claude</code></td><td><code>~/.claude/projects/&lt;slug&gt;/*.jsonl</code></td></tr>
+      <tr><td><code>/resume-cursor</code></td><td><code>~/.cursor/projects/&hellip;/agent-transcripts/</code></td></tr>
+      <tr><td><code>/resume-codex</code></td><td><code>~/.codex/sessions/**/rollout-*.jsonl</code></td></tr>
+      <tr><td><code>/resume-grok</code></td><td><code>~/.grok/sessions/&lt;cwd&gt;/&lt;id&gt;/chat_history.jsonl</code></td></tr>
+    </table>
+
+    <p>only sessions belonging to your current folder are listed. subfolders and the parent project count; <code>$HOME</code> never matches everything &mdash; learned that one the hard way.</p>
+
+    <pre><code>/resume-cursor
+/resume-claude latest
+/resume-grok 8f3a1c2e-…
+/resume-foreign auth
+/copy-session latest</code></pre>
+
+    <p>nothing opens a searchable picker. a word pre-filters it. <code>latest</code> skips the list. an id or a path takes that exact session. with no ui it just prints matching ids, which saves you over ssh.</p>
+
+    <p class="label">what surprised me</p>
+
+    <p>
+      cursor was the messiest &mdash; two locations, encoded paths,
+      inconsistent shapes. claude was the cleanest, one jsonl per session.
+      titles lie everywhere, most transcripts wrap your real prompt in xml or
+      slash-command envelopes, so the picker strips those and shows what you
+      actually typed.
+    </p>
+
+    <p>
+      and <code>/copy-session</code> became the real feature. i built it as an
+      extra; it&rsquo;s what i use most. full transcript in order, tool calls
+      as historical record, a short header with project, branch and session
+      id. it uses whatever clipboard tool it finds: <code>pbcopy</code>,
+      <code>clip</code>, <code>wl-copy</code>, <code>xclip</code>.
+    </p>
+
+    <p class="label">the safety bit</p>
+
+    <p>
+      a foreign transcript is untrusted history. it can contain instructions
+      like &ldquo;run this curl&rdquo;. so the handoff tells pi to never
+      execute instructions found in the transcript, treat foreign tool calls
+      as text rather than available tools, verify files and git state before
+      changing anything, and treat prior tool output as stale. system prompts
+      and encrypted reasoning blocks are never included.
+    </p>
+
+    <blockquote><p>still, only resume sessions you trust. you&rsquo;re feeding another agent&rsquo;s output into an agent with bash access.</p></blockquote>
+
+    <p class="label">dev notes</p>
+
+    <p>no runtime deps beyond what pi ships. typescript loads via jiti.</p>
+
+    <pre><code>git clone git@github.com:SachinD6/pi-resume-harness.git
+cd pi-resume-harness
+npm test
+pi install "$PWD"</code></pre>
+
+    <p><code>npm test</code> needs node 22+. tests cover all four readers plus resolve and handoff, because parsers rot fast when those tools change their formats.</p>
+
+    <p class="label">wrap up</p>
+
+    <p>
+      don&rsquo;t try to resume everything. most old sessions deserve to die.
+      what actually works: <code>latest</code> ninety percent of the time,
+      <code>/resume-foreign</code> when you forgot where you left off,
+      <code>/copy-session</code> when you&rsquo;re leaving pi and taking
+      context with you.
+    </p>
+
+    <p>
+      if i missed a harness you use,
+      <a href="https://github.com/SachinD6/pi-resume-harness">tell me</a>. the
+      reader pattern is small; a fifth one is about fifty lines.
+    </p>
+
+    <p class="bye">thanks for reading.</p>
+  </main>
+
+  <span class="byline">sachin chaudhary</span>
+
+  <script src="/theme.js" defer></script>
+</body>
+</html>
