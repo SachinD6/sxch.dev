@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>two karpathy talks, one mental model &middot; Sachin Chaudhary</title>
+  <meta name="description" content="notes on karpathy's 1hr intro to llms and the 3.5hr deep dive: pretraining, post-training, jagged intelligence, rl, and what changed in how i build.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="canonical" href="https://sxch.dev/writings/karpathy-llm-notes/">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Sachin Chaudhary">
+  <meta property="og:title" content="two karpathy talks, one mental model · Sachin Chaudhary">
+  <meta property="og:description" content="notes on karpathy's 1hr intro to llms and the 3.5hr deep dive: pretraining, post-training, jagged intelligence, rl, and what changed in how i build.">
+  <meta property="og:url" content="https://sxch.dev/writings/karpathy-llm-notes/">
+  <meta property="og:image" content="https://sxch.dev/writings/karpathy-llm-notes/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="two karpathy talks, one mental model">
+  <meta property="article:published_time" content="2026-10-17">
+  <meta property="article:author" content="Sachin Chaudhary">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="two karpathy talks, one mental model · Sachin Chaudhary">
+  <meta name="twitter:description" content="notes on karpathy's 1hr intro to llms and the 3.5hr deep dive: pretraining, post-training, jagged intelligence, rl, and what changed in how i build.">
+  <meta name="twitter:image" content="https://sxch.dev/writings/karpathy-llm-notes/og.png">
+  <style>
+    .post ul, .post ol { margin: 0 0 26px 20px; }
+    .post li { margin-bottom: 6px; }
+    .post li:last-child { margin-bottom: 0; }
+    .post code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.86em;
+      background: color-mix(in srgb, var(--fg) 7%, transparent);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .post blockquote {
+      margin-bottom: 26px;
+      padding-left: 14px;
+      border-left: 2px solid var(--muted);
+      color: var(--muted);
+    }
+    .post blockquote p { margin-bottom: 0; }
+    .title {
+      font-size: 1.65rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      margin: 30px 0 8px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-weight: 300;
+      font-size: 1.02rem;
+      margin-bottom: 12px;
+    }
+    .tldr {
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 26px;
+    }
+    .tldr-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .tldr ul { margin-bottom: 0; }
+    .table-wrap { overflow-x: auto; margin-bottom: 26px; }
+    .table-wrap table { margin-bottom: 0; min-width: 480px; }
+    .post table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 26px;
+      font-size: 13.5px;
+    }
+    .post th, .post td {
+      text-align: left;
+      padding: 8px 10px 8px 0;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    .post th {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .post .links { margin-top: 34px; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "two karpathy talks, one mental model",
+    "description": "notes on karpathy's 1hr intro to llms and the 3.5hr deep dive: pretraining, post-training, jagged intelligence, rl, and what changed in how i build.",
+    "datePublished": "2026-10-17",
+    "author": { "@type": "Person", "name": "Sachin Chaudhary", "url": "https://sxch.dev/" },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://sxch.dev/writings/karpathy-llm-notes/" }
+  }
+  </script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <button id="theme-toggle" type="button" aria-label="Toggle color theme">dark</button>
+
+  <main class="post">
+  <article>
+    <p class="links"><a href="/">back</a></p>
+
+    <h1 class="title">two karpathy talks, one mental model</h1>
+
+    <p class="subtitle">notes on the 1hr intro and the 3.5hr deep dive, and what stuck after building on llms daily.</p>
+
+    <p class="meta"><time datetime="2026-10-17">oct 17, 2026</time> &middot; 4 min read &middot; llms</p>
+
+    <p>
+      i spend most days building on top of llms now. agent session tooling,
+      data pipelines, the usual. at some point using them daily without
+      knowing how they work started to feel like driving without knowing what
+      an engine does. so i watched both karpathy talks back to back: the
+      <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g">1hr intro from 2023</a>
+      and the
+      <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI">3.5hr deep dive from 2025</a>.
+    </p>
+
+    <p>
+      here is the whole thing compressed into one mental model, plus the three
+      ideas that actually changed how i build.
+    </p>
+
+    <div class="tldr">
+      <p class="tldr-label">tl;dr</p>
+
+      <ul>
+        <li>an llm predicts the next token over internet-scale text. everything else is scaffolding on that.</li>
+        <li>pretraining builds the base model. post-training (chat data, human feedback, RL) turns it into an assistant.</li>
+        <li>the models are jagged. brilliant in places, confidently wrong at counting and spelling.</li>
+        <li>give them tokens to think and tools to lean on. never rely on mental arithmetic.</li>
+        <li>RL on verifiable rewards is what gave us reasoning models. DeepSeek-R1 showed it works in the open.</li>
+      </ul>
+    </div>
+
+    <p class="label">the stack in three stages</p>
+
+    <div class="table-wrap">
+    <table>
+      <tr><th>stage</th><th>what happens</th></tr>
+      <tr><td>pretrain</td><td>read the internet, learn to predict. FineWeb alone is 15 trillion tokens. GPT-2 trained on 100 billion, which counts as tiny now.</td></tr>
+      <tr><td>post-train</td><td>conversations first, then human preferences, then verifiable rewards. this is where the assistant comes from. a base model only completes text.</td></tr>
+      <tr><td>use</td><td>inference with tools, memory, and room to think. the psychology of the model at runtime matters as much as the weights.</td></tr>
+    </table>
+    </div>
+
+    <p class="label">jagged intelligence</p>
+
+    <p>
+      the failures do not look like human failures. a model that writes a
+      flawless essay cannot count letters in a word. karpathy&rsquo;s example:
+      ask it to count, and the fix is to have it call a python routine. the
+      interpreter does the counting, not the model&rsquo;s mental arithmetic.
+    </p>
+
+    <p>
+      once you see this you stop being surprised and start designing around
+      it. every sharp edge is a place where a tool call belongs.
+    </p>
+
+    <p class="label">RL actually working</p>
+
+    <p>
+      the R1 section is the one i keep thinking about. math accuracy climbs as
+      training runs, the thinking traces get longer, and new strategies show
+      up unprompted. the aha moments are not programmed in. they fall out of
+      optimizing a verifiable reward.
+    </p>
+
+    <p>
+      the AlphaGo parallel lands it. move 37 was a move no human expert would
+      play, rated 1 in 10,000, brilliant in retrospect. imitation never finds
+      that move. search plus a reward does.
+    </p>
+
+    <p class="label">the llm os, and its security problem</p>
+
+    <p>
+      the intro talk frames chat assistants as an emerging operating system.
+      the model is the kernel, tools are the apps, and the market splits the
+      familiar way: proprietary systems on one side, a maturing open-source
+      ecosystem led by llama on the other, like windows versus linux.
+    </p>
+
+    <p>
+      the same talk explains why the security problems are structural.
+      prompt injection and jailbreaks are not bugs in the usual sense. when
+      data and instructions share one channel, attacks come with the
+      architecture. worth remembering every time you wire an agent to
+      a real tool.
+    </p>
+
+    <p class="label">what i do differently now</p>
+
+    <p>
+      two things in my own projects trace straight back to these talks.
+      pi-resume-harness treats old tool output as stale and re-verifies the
+      files before acting. that is the never-trust-mental-arithmetic rule,
+      applied to agents. and repoatlas cites real files instead of trusting
+      generated paths, because model memory is lossy and the file is not.
+    </p>
+
+    <p>
+      the third is smaller and daily. when a task needs exactness, i make the
+      model write it down or call a tool. tokens to think, literally.
+    </p>
+
+    <p class="label">links</p>
+
+    <p class="links"><a href="https://www.youtube.com/watch?v=zjkBMFhNj_g">1hr intro</a> <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI">3.5hr deep dive</a> <a href="https://tiktokenizer.vercel.app/">tiktokenizer</a> <a href="https://bbycroft.net/llm">transformer visualizer</a> <a href="https://github.com/karpathy/llm.c/discussions/677">llm.c gpt-2 repro</a></p>
+
+    <p class="bye">thanks for reading.</p>
+
+    <p class="links"><a href="/">back</a></p>
+  </article>
+  </main>
+
+  <span class="byline">sachin chaudhary</span>
+
+  <script src="/theme.js" defer></script>
+</body>
+</html>
